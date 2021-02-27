@@ -1,0 +1,334 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    {% block head %}
+    <title>{% block title %}{% endblock %}ATW-Classifier</title>
+
+
+    <!--import script files needed from plotly and bootstrap-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+        integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <!--import Slider bootstrap js and css-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/11.0.2/bootstrap-slider.min.js"
+        integrity="sha512-f0VlzJbcEB6KiW8ZVtL+5HWPDyW1+nJEjguZ5IVnSQkvZbwBt2RfCBY0CBO1PsMAqxxrG4Di6TfsCPP3ZRwKpA=="
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/11.0.2/css/bootstrap-slider.min.css"
+        integrity="sha512-3q8fi8M0VS+X/3n64Ndpp6Bit7oXSiyCnzmlx6IDBLGlY5euFySyJ46RUlqIVs0DPCGOypqP8IRk/EyPvU28mQ=="
+        crossorigin="anonymous" />
+
+
+    <script type="text/javascript" src="{{ url_for('static', filename='lazy_load.js') }}"></script>
+    <!--<script type="text/javascript" src="{{ url_for('static', filename='wheelzoom.js') }}"></script>-->
+    
+   
+
+   
+    
+
+    <style>
+        }
+
+        .img-thumbnail {
+            background: #F1F1FA;
+            width: auto;
+            min-width: 100px;
+            height: 200px;
+            margin: 10px auto;
+            border: 0;
+        }
+
+        .inline_items_li_border {
+            display: inline-block;
+            border: 1px solid;
+            /*padding: 10px;*/
+            background: #d3d3d3;
+            box-shadow: 5px 10px;
+            margin-bottom: 20px;
+            margin-right: 20px;
+        }
+    </style>
+
+
+
+    {% endblock %}
+
+
+</head>
+
+<body>
+
+    <!--navbar links-->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <a class="navbar-brand" href="#">Around the World Classifier</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02"
+            aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+            <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="https://www.udacity.com">Udacity</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="https://github.com/ddhartma">My Github</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!--middle section-->
+    <div class="row">
+
+        <!--social media buttons column-->
+        <div class="col-1 border-right">
+            <div id="follow-me" class="mt-3 ml-3">
+                <a href="#">
+                    <img src="../static/img/linkedinlogo.png" alt="linkedin" class="img-fluid mb-4 ml-2">
+                </a>
+                <a href="https://github.com/ddhartma">
+                    <img src="../static/img/githublogo.png" alt="github" class="img-fluid ml-2">
+                </a>
+            </div>
+        </div>
+
+        <!--visualizations column-->
+
+        <div class="col-11">
+            <!--chart descriptions-->
+            <div class="row">
+                <div id="middle-info" class="col mt-3">
+                    <h2 id="tag-line">Around the World Classifier</h2>
+                </div>
+                <div class="col mt-3">
+                    <p>Number of images: <span style="color:blue">{{ number_images }}</span>  | {% if check_classification==true %}Filtered by <span style="color:blue">Classification</span> | {% else %}{% endif %} {% if check_date==true %}Filtered by <span style="color:blue">Date</span>{% else %}{% endif %}</p>
+                </div>
+            </div>
+
+            <!--top two cards - control and thumbnails-->
+            <div class="row">
+                <div class="col m-2 bg-light">
+                    {% include 'table.html' %}
+                </div>
+                <div class="col m-2 bg-light">
+                    {% include 'thumbnail.html' %}
+                </div>
+            </div>
+
+            <!--bottom two cards - gps and carousel-->
+            <div class="row">
+                <div class="col m-2 bg-light">
+                    <div id="chart3">
+                        {% include 'gps_map.html' %}
+                        <div id="image_box_description" class="mt-3"></div>
+                    </div>
+                </div>
+                <div class="col m-2 bg-light">
+                    <div id="chart4">
+                        {% include 'carousel.html' %}
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+            <!--footer section-->
+            <div id="footer" class="container">
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        $('#thumbnail_container').height($('#browser_table').outerHeight());
+
+    </script>
+
+    <script>
+
+        // Update website variables
+        function update_vars() {
+
+
+
+            var class_rep_file_path = $('#id_label_for_custom_file').text();
+            var google_api = $('#id_gps_api_input').val();
+
+            var check_classification = $("#id_check_classification").is(':checked');
+            var check_date = $("#id_check_date").is(':checked');
+            var check_map = $("#id_check_gps").is(':checked');
+
+            var selected_1 = $('#id_select_1 option:selected').text();
+            var selected_2 = $('#id_select_2 option:selected').text();
+            var selected_3 = $('#id_select_3 option:selected').text();
+            var selected_4 = $('#id_select_4 option:selected').text();
+            var selected_5 = $('#id_select_5 option:selected').text();
+            var selected_6 = $('#id_select_6 option:selected').text();
+            var selected_7 = $('#id_select_7 option:selected').text();
+            var selected_8 = $('#id_select_8 option:selected').text();
+
+            var start_date = $('#id_start_date').val()
+            var end_date = $('#id_end_date').val()
+
+            var current_location_lat = $('#id_input_text_lat').text()
+            var current_location_lon = $('#id_input_text_long').text()
+
+            //var current_zoom = $('#input_range_text_zoom').val()
+            //var current_radius = $('#input_range_text_radius').val()
+
+            var data = {
+                'class_rep_file_path': class_rep_file_path,
+                'google_api': google_api,
+                'check_classification': check_classification,
+                'check_date': check_date,
+                'check_map': check_map,
+                'selected_1': selected_1,
+                'selected_2': selected_2,
+                'selected_3': selected_3,
+                'selected_4': selected_4,
+                'selected_5': selected_5,
+                'selected_6': selected_6,
+                'selected_7': selected_7,
+                'selected_8': selected_8,
+                'start_date': start_date,
+                'end_date': end_date,
+                'current_location_lat': current_location_lat,
+                'current_location_lon': current_location_lon,
+                //'current_zoom': current_zoom,
+                //'current_radius': current_radius,
+                'save_path_api': false,
+                'load_fav': false,
+                'export_table': false,
+                'save_fav': false,
+                'apply_filter': false,
+                'likes': like_dict
+            }
+
+            return data
+
+        }
+
+
+        // update date (if needed --> update = true, data updated with data_to_update)
+        // send data to Python --> get_post_js_submit
+        function send_data_to_python(update = false, data_to_update) {
+
+            data = update_vars();
+
+            if (update == true) {
+                for (i = 0; i < data_to_update.length; i++) {
+                    data[data_to_update[i][0]] = data_to_update[i][1]
+                }
+
+
+            }
+            console.log('----------------')
+            for (var key in data) {
+                console.log(key, data[key]);
+            }
+
+            $.ajax({
+                url: "/get_post_js_submit",
+                type: 'POST',
+                data: JSON.stringify({ data }),
+                contentType: "application/json",
+                //data: data,
+                //dataType: "json", 
+                success: function (response) {
+
+                    location.reload(true);
+
+                }
+            });
+        }
+
+
+        // Change and Get File from csv file browser
+        $('#id_class_repFile_input').change(function () {
+            var class_rep_file_path = $('#id_label_for_custom_file').text();
+
+            $('#id_label_for_custom_file').text(class_rep_file_path);
+            console.log(class_rep_file_path)
+        });
+
+
+        // APPLY FILTER BUTTON --> Send Data to Python 
+        $('#id_submit_button').click(function () {
+            alert('Your actual filter choice is going to be collected now. Please Wait while Loading!')
+            data_to_update = [['apply_filter', true]]
+            send_data_to_python(update = true, data_to_update)
+
+        });
+
+        // SAVE BUTTON --> Update csv file path and Goggle API AND Send Data to Python 
+        $('#id_gps_api_save_button').click(function () {
+            var class_rep_file_path = $('#id_label_for_custom_file').text();
+            var google_api = $('#id_gps_api_input').val();
+            alert('The path to the classification report and your Google API key s going to be saved now. Filename: setting.json')
+            data_to_update = [['save_path_api', true], ['class_rep_file_path', class_rep_file_path], ['google_api', google_api]]
+            send_data_to_python(update = true, data_to_update)
+        });
+
+
+        // LOAD FAVOURITES BUTTON --> 
+        $('#id_load_fav_button').click(function () {
+            alert('Your Favourite Image Collection is going to be loaded now')
+            data_to_update = [['load_fav', true]]
+            send_data_to_python(update = true, data_to_update)
+
+        });
+
+        // SAVE FAVOURITES BUTTON --> 
+        $('#id_save_fav_button').click(function () {
+            alert('Your Favourite Image Collection is going to be saved now')
+            data_to_update = [['save_fav', true]]
+            send_data_to_python(update = true, data_to_update)
+
+        });
+
+        // EXPORT TABLE BUTTON --> 
+        $('#id_export_table_button').click(function () {
+            alert('Your actual filter choice is going to be exported as an HTML file. Filename: filter_result.html')
+            data_to_update = [['export_table', true]]
+            send_data_to_python(update = true, data_to_update)
+
+        });
+
+
+
+
+    </script>
+
+    
+
+
+</body>
+
+
+<footer>
+
+
+</footer>
+
+
+</html>

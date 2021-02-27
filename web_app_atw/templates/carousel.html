@@ -1,0 +1,221 @@
+<!--Bootstrap Carousel-->
+<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+    <div class="carousel-inner">
+        <!--Bootstrap Carousel Image_1-->
+        <div class="carousel-item active">
+            <div class="container">
+                <div class="col px-0 zoom">
+
+                    <img class="zoomies  w-100 mt-3 img-fluid" src="{{ url_for('show_file', filename='1.jpg') }}"
+                        alt="1.jpg">
+
+                </div>
+            </div>
+        </div>
+        {% for file in image_set %}
+        <div class="carousel-item">
+            <div class="container">
+                <div class="col px-0 zoom" style="max-height:800px; !important;">
+                   
+                        <img id="id_img_carousel" class=" mt-3 img-fluid"
+                            data-lazy-load-src="{{ url_for('show_file', filename=file) }}"
+                            style="max-width:100%; max-height:800px; !important;" alt=file>
+                    
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+<div class="container">
+    <div class="row mt-2">
+        <div class="col">
+            <!--Bootstrap Carousel Button Prev-->
+            <button id="id_btn_prev" type="button" class="btn btn-info">Prev</button>
+
+            <!--Bootstrap Carousel Button Play and Pause-->
+            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                <label id="id_btn_play" class="btn btn-info active">
+                    <input type="radio" name="options" id="option1" autocomplete="off" checked>Play
+                </label>
+                <label id="id_btn_pause" class="btn btn-info">
+                    <input type="radio" name="options" id="option2" autocomplete="off">Pause
+                </label>
+            </div>
+
+            <!--Bootstrap Carousel Button Next-->
+            <button id="id_btn_next" type="button" class="btn btn-info">Next</button>
+
+            <!--Bootstrap Carousel Slider-->
+            <input id="ex6" type="text" data-slider-min="0" data-slider-max="30" data-slider-step="1"
+                data-slider-value="3" />
+            <div><span id="ex6CurrentSliderValLabel">Interval: </span><span id="ex6SliderVal">3s</span></div>
+
+        </div>
+
+        <div class="col">
+            <!--Bootstrap Carousel Checkbox Like-->
+            <label class="btn btn-success">
+                <input id="id_like_btn" type="checkbox"> Like
+            </label>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="{{ url_for('static', filename='directive.js') }}"></script>
+
+<script>
+
+    var like_dict = {};
+    // Check actual Like state
+    function check_like_state() {
+        var src = $('.active').find('img').attr('src');
+        try {
+            if (like_dict[src] == true) {
+                $("#id_like_btn").prop('checked', true);
+            }
+            else {
+                $("#id_like_btn").prop('checked', false);
+            }
+        }
+        catch {
+            console.log('no state')
+        }
+
+    }
+
+    function update_gps_and_description(src) {
+
+        file_elmts = src.split('/')
+        file = file_elmts[file_elmts.length - 1]
+
+        images = {{ image_set | safe }};
+
+        file_number = images.indexOf(file);
+
+        file_path = '/uploads/' + file;
+
+        var mi = {{ markers_and_infos | safe }};
+
+        var data_set = [mi[0][file_number], mi[1][file_number], file_path, mi[3][file_number], mi[4][file_number], mi[5][file_number], mi[6][file_number]];
+
+        // Update GPS And Info Description
+        image_event(data_set);
+
+    }
+
+    // jQuery Previous Button
+    $("#id_btn_prev").click(function () {
+        $("#carouselExampleIndicators").carousel("prev");
+
+        $(document).ready(function () {
+
+            $('#carouselExampleIndicators').on('slid.bs.carousel', function () {
+                var src = $('.active').find('img').attr('src');
+                check_like_state()
+                update_gps_and_description(src)
+            });
+            forward = false;
+            var data_set = {{ markers_and_infos_json | safe }}
+            image_event(data_set[src]);
+
+        });
+    });
+
+    // jQuery Play Button
+    $("#id_btn_play").click(function () {
+        $("#carouselExampleIndicators").carousel("cycle");
+
+        play_bool = true;
+        $('#carouselExampleIndicators').on('slid.bs.carousel', function () {
+            var src = $('.active').find('img').attr('src');
+            check_like_state()
+            update_gps_and_description(src)
+        });
+        forward = true;
+        
+    });
+
+    // jQuery Pause Button
+    $("#id_btn_pause").click(function () {
+        $("#carouselExampleIndicators").carousel("pause");
+        play_bool = false;
+    });
+
+    // jQuery Next Button
+    $("#id_btn_next").click(function () {
+
+        $("#carouselExampleIndicators").carousel("next");
+        $(document).ready(function () {
+
+            $('#carouselExampleIndicators').on('slid.bs.carousel', function () {
+                var src = $('.active').find('img').attr('src');
+                check_like_state()
+                update_gps_and_description(src)
+            });
+            forward = true;
+            
+        });
+    });
+
+    // jQuery get state of slider
+    $("#ex6").slider();
+    $("#ex6").on("slide", function (slideEvt) {
+        
+        var imageUrl = $(this).data('link');
+        $("#SHOWCASEIMG".attr("src",imageUrl));
+
+        $("#ex6SliderVal").text(String(slideEvt.value) + 's');
+        const options = $("#carouselExampleIndicators").data()['bs.carousel']["_config"];
+        options.interval = slideEvt.value * 1000;
+    });
+
+    // jQuery handle Like checkbox change events
+    $('#id_like_btn').change(function () {
+        var src = $('.active').find('img').attr('src');
+        if (document.getElementById('id_like_btn').checked) {
+            like_dict[src] = true;
+        } else {
+            like_dict[src] = false;
+        }
+    });
+
+    // jQuery get actual source and update like_dict when slide changes
+    $(document).ready(function () {
+        $('#carouselExampleIndicators').on('slid.bs.carousel', function () {
+            var src = $('.active').find('img').attr('src');
+            check_like_state()
+            var imageUrl = $(this).data('link');
+            $("#SHOWCASEIMG".attr("src",imageUrl));
+            update_gps_and_description(src)
+        });
+    });
+
+
+    // jQuery to lazy load images
+    var cHeight = 0;
+    $('#carouselExampleIndicators').on('slide.bs.carousel', function (e) {
+
+        var $nextImage = $(e.relatedTarget).find('img');
+
+        $activeItem = $('.active.item', this);
+
+        // prevents the slide decrease in height
+        if (cHeight == 0) {
+            cHeight = $(this).height();
+            $activeItem.next('.item').height(cHeight);
+        }
+
+        // prevents the loaded image if it is already loaded
+        var src = $nextImage.data('lazy-load-src');
+
+        if (typeof src !== "undefined" && src != "") {
+            $nextImage.attr('src', src)
+            $nextImage.data('lazy-load-src', '');
+        }
+    });
+
+</script>

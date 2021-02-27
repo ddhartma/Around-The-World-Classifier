@@ -1,0 +1,357 @@
+<!--GPS MAP-->
+<div id="map" class="mt-3" style=" height: 800px {% if check_map==false %}display: none;{% else %}{% endif %}"></div>
+
+<!--Bootstrap RADIUS Slider Log-->
+<div {% if check_map==false %}style="display: none;"{% else %}{% endif %}>
+    <input id="gps_radius_range_slider" type="text" data-slider-min="5" data-slider-max="1000000" data-slider-step="1" />
+    <span id="input_range_text_radius_title">Radius (m): </span><span
+        id="input_range_text_radius">{{ current_radius }}</span>
+</div>
+<!--Bootstrap ZOOM Slider Lin-->
+<div {% if check_map==false %}style="display: none;"{% else %}{% endif %}>
+    <input id="gps_zoom_range_text_zoom" type="text" data-slider-min="0" data-slider-max="30" data-slider-step="1"
+        data-slider-value="3" />
+    <span id="input_range_text_zoom_title">Zoom: </span><span id="input_range_text_zoom">{{ current_zoom }}</span>
+</div>
+
+
+<script>
+    // Initialize the GPS MAP
+    var position_to_center = { lat: 0, lng: 0 };
+    let map;
+    let markersArray = [];
+    var marker = "";
+    var circle = "";
+    var radius = 500000;
+    var zoom_level = 5
+    var latLng = "";
+    // Init Log Radius Slider
+
+
+    // Get Set Radius Slider
+    $("#gps_radius_range_slider").slider({
+        min: 5,
+        max: 1000000,
+        scale: 'logarithmic',
+        step: 1
+    });
+    $("#gps_radius_range_slider").on("slide", function (slideEvt) {
+        $("#input_range_text_radius").text(slideEvt.value);
+        radius = parseInt(document.getElementById("gps_radius_range_slider").value);
+        
+        updateRadius(circle, radius)
+    });
+
+    // Update GPS Radius
+    function updateRadius(circle, rad) {
+        circle.setRadius(rad);
+    }
+
+    // Get Set Zoom Slider
+    $("#gps_zoom_range_text_zoom").slider();
+    $("#gps_zoom_range_text_zoom").on("slide", function (slideEvt) {
+
+        $("#input_range_text_zoom").text(slideEvt.value);
+        zoom_level = parseInt(document.getElementById("gps_zoom_range_text_zoom").value);
+        console.log(zoom_level)
+
+        if (marker) {
+            position_to_center = marker.getPosition();
+        }
+
+        map.setCenter(position_to_center);
+        map.zoom = zoom_level;
+        //map.setZoom(parseInt(zoom_level))
+        map.panBy(0, 0);
+    });
+
+
+
+
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: { lat: 0, lng: 0 },
+            zoom: 5
+        });
+
+        // map onclick listener
+        map.addListener('click', function (e) {
+            //console.log(e);
+            addMarker(e.latLng);
+        });
+    }
+
+    // Set the MAP based on the run.py Map setting (classifications, dates, gps state etc.)
+    function set_map() {
+        var current_loc_lat = {{ current_location_lat }};
+        var current_loc_lon = {{ current_location_lon }};
+        var curr_zoom = 5;
+        var curr_radius = 20;
+        var mi = {{ markers_and_infos | safe }};
+
+        var image = 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png';
+        var infowindow = new google.maps.InfoWindow();
+
+        for (var i = 0; i < mi[0].length; i++) {
+            var latitude = mi[0][i]
+            var longitude = mi[1][i]
+            var img_path = mi[2][i]
+            var date_time = mi[3][i]
+            var GPS = mi[4][i]
+            var classes_yolo = mi[5][i]
+            var classes_ImgNet = mi[6][i]
+            var content = '<div>' +
+                '<h4>Image Path</h4><p>' + img_path + '</p>' +
+                '<h4>Date & Time</h4><p>' + date_time + '</p>' +
+                '<h4>GPS</h4><p>' + GPS + '</p>' +
+                '<h4>classes_yolo</h4><p>' + classes_yolo + '</p>' +
+                '<h4>classes_ImgNet</h4><p>' + classes_ImgNet + '</p>' +
+                '<img src="/uploads/' + img_path + '" alt="Image"  height="300"> ' +
+                '</div>';
+
+            travel_marker = new google.maps.Marker({
+                map: map,
+                position: { lat: latitude, lng: longitude },
+                draggable: false,
+                icon: image
+            });
+
+            google.maps.event.addListener(travel_marker, 'click', (function (travel_marker, content, infowindow) {
+                return function () {
+
+                    infowindow.setContent(content);
+                    infowindow.open(map, travel_marker);
+                }
+            })(travel_marker, content, infowindow));
+        }
+
+        if (current_loc_lat != '0') {
+            marker = new google.maps.Marker({
+                map: map,
+                position: { lat: parseFloat(current_loc_lat), lng: parseFloat(current_loc_lon) },
+                draggable: true,
+            });
+            position_to_center = marker.getPosition();
+            circle = new google.maps.Circle({
+                center: position_to_center,
+                radius: curr_radius,
+                fillColor: "#0000FF",
+                fillOpacity: 0.1,
+                map: map,
+                strokeColor: "#FFFFFF",
+                strokeOpacity: 0.1,
+                strokeWeight: 2
+            });
+            updateRadius(circle, circle.radius);
+            circle.bindTo('center', marker, 'position');
+
+        }
+
+    };
+
+    // define function to add marker at given lat & lng
+    function addMarker(latLng) {
+        latLng = latLng;
+        if (marker) {
+            marker.setMap(null);
+            marker = "";
+        }
+        if (circle) {
+            circle.setMap(null);
+        }
+
+        marker = new google.maps.Marker({
+            map: map,
+            position: latLng,
+            draggable: true,
+
+        });
+        position_to_center = marker.getPosition();
+
+        google.maps.event.addListener(marker, 'dragend',
+            function (marker) {
+                latLng = marker.latLng;
+
+                //document.getElementById("id_input_text_lat").innerHTML = latLng.lat().toFixed(3);
+                //document.getElementById("id_input_text_long").innerHTML = latLng.lng().toFixed(3);
+
+            }
+        );
+
+        circle = new google.maps.Circle({
+            center: position_to_center,
+            radius: radius,
+            fillColor: "#0000FF",
+            fillOpacity: 0.1,
+            map: map,
+            strokeColor: "#FFFFFF",
+            strokeOpacity: 0.1,
+            strokeWeight: 2
+        });
+
+        //document.getElementById("id_input_text_lat").innerHTML = latLng.lat().toFixed(3);
+        //document.getElementById("id_input_text_long").innerHTML = latLng.lng().toFixed(3);
+        circle.bindTo('center', marker, 'position');
+
+    }
+
+    var slider = new Slider('#ex15', {
+        min: 1000,
+        max: 10000000,
+        scale: 'logarithmic',
+        step: 10
+    });
+
+
+    function resize_Function() {
+        if (document.getElementById("side_image")) {
+            image_height = document.getElementById("side_image").clientHeight;
+            image_width = document.getElementById("side_image").clientWidth;
+            document.getElementById("map").style.height = String(image_height) + 'px';
+        };
+    };
+
+
+    //function image_event(href, image){
+    function image_event(data_set) {
+        zoom_level = parseInt(document.getElementById("gps_zoom_range_text_zoom").value);
+        radius = parseInt(document.getElementById("gps_radius_range_slider").value);
+
+        try {
+            var curr_lat = parseFloat(data_set[0]);
+        }
+        catch{
+            var curr_lat = '';
+        }
+        try {
+            var curr_long = parseFloat(data_set[1]);
+        }
+        catch{
+            var curr_long = '';
+        }
+        var curr_img_path = data_set[2]
+        var curr_datetime = data_set[3]
+        var curr_gps = curr_lat.toFixed(3).toString() + ', ' + curr_long.toFixed(3).toString()
+        var curr_yolo = data_set[5]
+        var curr_imgNet = data_set[6]
+        //var curr_rawDataNumber = parseInt(data_set[7])
+        //var curr_favoriteNumber = parseInt(data_set[8])
+
+        var src_image = "<img id='side_image' style='width: auto; height: auto; max-height: 50vh;' src=" + curr_img_path + " ondblclick='get_it_large()'></img>";
+        var src_text =
+            '<ul class=inline_items_ul_border>' +
+            '<li class="inline_items_li_border"><h4 style="padding-left: 10px; padding-right: 10px; color: #42788e">Image Path</h4><p style="padding-left: 10px; padding-right: 10px; color: #42788e">' + curr_img_path + '</p></li>' +
+            '<li class="inline_items_li_border"><h4 style="padding-left: 10px; padding-right: 10px; color: #42788e">Date & Time</h3><p style="padding-left: 10px; padding-right: 10px; color: #42788e">' + curr_datetime + '</p></li>' +
+            '<li class="inline_items_li_border"><h4 style="padding-left: 10px; padding-right: 10px; color: #42788e">GPS</h3><p style="padding-left: 10px; padding-right: 10px; color: #42788e">' + curr_gps + '</p></li>' +
+            '<li class="inline_items_li_border"><h4 style="padding-left: 10px; padding-right: 10px; color: #42788e">classes_yolo</h3><p style="padding-left: 10px; padding-right: 10px; color: #42788e"> ' + curr_yolo + '</p></li>' +
+            '<li class="inline_items_li_border"><h4 style="padding-left: 10px; padding-right: 10px; color: #42788e">classes_ImgNet</h3><p style="padding-left: 10px; padding-right: 10px; color: #42788e">' + curr_imgNet + '</p></li>' +
+            '</ul>';
+
+        //document.getElementById("image_box").innerHTML = src_image;
+        document.getElementById("image_box_description").innerHTML = src_text;
+        //document.getElementById("id_number_rawData").value = curr_rawDataNumber;
+        //document.getElementById("id_number_favourite").value = curr_favoriteNumber;
+        //resize_Function();
+
+        if (isNaN(curr_lat) == false) {
+            console.log(curr_lat.toFixed(3))
+            console.log(curr_long.toFixed(3))
+
+            document.getElementById("id_input_text_lat").innerHTML = 'Latitude = ' + curr_lat.toFixed(3).toString();
+            document.getElementById("id_input_text_long").innerHTML = 'Longitude = ' + curr_long.toFixed(3).toString();
+
+            map.setCenter({ lat: curr_lat, lng: curr_long });
+            map.zoom = zoom_level;
+
+            position_to_center = { lat: curr_lat, lng: curr_long };
+
+            if (marker) {
+                marker.setMap(null);
+                marker = "";
+
+            }
+
+            if (circle) {
+                circle.setMap(null);
+            }
+
+            circle = new google.maps.Circle({
+
+                center: position_to_center,
+                radius: 100000,
+                fillColor: "#0000FF",
+                fillOpacity: 0.1,
+                map: map,
+                strokeColor: "#FFFFFF",
+                strokeOpacity: 0.1,
+                strokeWeight: 2
+
+            });
+
+
+
+
+        } else if (isNaN(curr_lat)) {
+            map.setCenter({ lat: 0, lng: 0 });
+            map.zoom = 2.5;
+            map.panBy(0, 0);
+
+            document.getElementById("id_input_text_lat").innerHTML = 'Latidude = NO GPS DATA';
+            document.getElementById("id_input_text_long").innerHTML = 'Longitude = NO GPS DATA';
+
+        }
+
+        if (zoom_level < 10) {
+            if (circle) {
+                circle.setRadius(radius);
+            }
+        } else {
+            if (circle) {
+                circle.setRadius(radius);
+            }
+        }
+        map.panBy(0, 0);
+    };
+
+
+
+    // Not implemented functions from here on!!!
+    function rotate_left_image() {
+        img.style.transform = 'rotate(270deg) scale(.7)';
+
+        sender_id = 'rotate_left'
+        callback_function = 'ctrl_call_back'
+        var values_of_id_properties_array = [];
+
+        values_of_id_properties_array.push(['rotate_left', '-90'])
+
+        var callback_string = 'ctrl_action' + '<_N_>' + sender_id + '<_N_>' + callback_function + '<_N_>' + String(values_of_id_properties_array);
+        test_me_1(js_callback_2);
+        function js_callback_2(msg, py_callbackk) {
+            py_callbackk(callback_string);
+        }
+    }
+
+    function rotate_right_image() {
+        var img = document.getElementById('side_image');
+        img.style.transform = 'rotate(90deg) scale(.7)';
+    };
+
+    function rotate_180_image() {
+        var img = document.getElementById('side_image');
+        img.style.transform = 'rotate(180deg)';
+    };
+
+    function get_it_large() {
+        var mainImg = document.getElementById("side_image").src;
+        window.open(mainImg);
+    };
+
+</script>
+
+<script src="{{ google_api }}">
+</script>
+
+<script>
+    set_map()
+</script>

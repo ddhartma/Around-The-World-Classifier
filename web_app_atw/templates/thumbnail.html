@@ -1,0 +1,48 @@
+
+<div id="thumbnail_container" class="row" style="overflow-y: scroll;">
+    {% for file in image_set %}
+
+
+    <div class="col-3" style="display: block; overflow-x: scroll; white-space: nowrap;">
+      <a href="#" class="d-block">
+        <img class="lazy img-fluid img-thumbnail img_dummy" data-src="{{ url_for('show_file', filename=file) }}">
+      </a>
+    </div>
+
+    {% endfor %}
+</div>
+
+<script>
+
+
+// jQuery set image in Carousel via thumbnail image
+$(".img_dummy").click(function () {
+  var src = $(this).attr('src');
+
+  file_elmts = src.split('/')
+  file = file_elmts[file_elmts.length - 1]
+
+  images = {{ image_set | safe }}
+  file_number = images.indexOf(file);
+
+  $("#carouselExampleIndicators").carousel(file_number+1);
+
+  file_path = '/uploads/' + file
+
+  var mi = {{ markers_and_infos | safe }};
+
+  var data_set = [mi[0][file_number], mi[1][file_number], file_path, mi[3][file_number], mi[4][file_number], mi[5][file_number], mi[6][file_number]]
+
+  // Update GPS And Info Description
+  image_event(data_set)
+
+
+
+
+  })
+
+
+  $("#id_btn_play").click(function () {
+
+    });
+</script>

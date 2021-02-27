@@ -1,0 +1,275 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    {% block head %}
+    <title>{% block title %}{% endblock %}ATW-Classifier</title>
+
+
+    <!--import script files needed from plotly and bootstrap-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+        integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <!--import Slider bootstrap js and css-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/11.0.2/bootstrap-slider.min.js"
+        integrity="sha512-f0VlzJbcEB6KiW8ZVtL+5HWPDyW1+nJEjguZ5IVnSQkvZbwBt2RfCBY0CBO1PsMAqxxrG4Di6TfsCPP3ZRwKpA=="
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/11.0.2/css/bootstrap-slider.min.css"
+        integrity="sha512-3q8fi8M0VS+X/3n64Ndpp6Bit7oXSiyCnzmlx6IDBLGlY5euFySyJ46RUlqIVs0DPCGOypqP8IRk/EyPvU28mQ=="
+        crossorigin="anonymous" />
+
+
+    <script type="text/javascript" src="{{ url_for('static', filename='lazy_load.js') }}"></script>
+
+    <style>
+        }
+
+        .img-thumbnail {
+            background: #F1F1FA;
+            width: auto;
+            min-width: 100px;
+            height: 200px;
+            margin: 10px auto;
+            border: 0;
+        }
+    </style>
+
+
+
+    {% endblock %}
+
+
+
+
+</head>
+
+<body>
+
+  <!--Bootstrap Carousel-->
+  <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+      <div class="carousel-inner">
+          <!--Bootstrap Carousel Image_1-->
+          <div class="carousel-item active">
+              <div class="container">
+                  <div class="col-md-9 px-0">
+
+                      <img class="d-block w-100 img-fluid" src="{{ url_for('show_file', filename='1.jpg') }}" alt="1.jpg">
+
+                  </div>
+              </div>
+          </div>
+          {% for file in image_set %}
+          <div class="carousel-item">
+              <div class="container">
+                  <div class="col-md-9 px-0">
+
+                      <img id="id_img_carousel" class="d-block w-100 img-fluid" data-lazy-load-src="{{ url_for('show_file', filename=file) }}"
+                          alt=file>
+                  </div>
+              </div>
+          </div>
+          {% endfor %}
+
+      </div>
+
+  </div>
+
+  <div class="container">
+      <div class="row mt-2">
+          <div class="col">
+              <!--Bootstrap Carousel Button Prev-->
+              <button id="id_btn_prev" type="button" class="btn btn-info">Prev</button>
+
+              <!--Bootstrap Carousel Button Play and Pause-->
+              <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                  <label id="id_btn_play" class="btn btn-info active">
+                      <input type="radio" name="options" id="option1" autocomplete="off" checked>Play
+                  </label>
+                  <label id="id_btn_pause" class="btn btn-info">
+                      <input type="radio" name="options" id="option2" autocomplete="off">Pause
+                  </label>
+              </div>
+
+              <!--Bootstrap Carousel Button Next-->
+              <button id="id_btn_next" type="button" class="btn btn-info">Next</button>
+
+              <!--Bootstrap Carousel Slider-->
+              <input id="ex6" type="text" data-slider-min="0" data-slider-max="30" data-slider-step="1"
+                  data-slider-value="3" />
+              <div><span id="ex6CurrentSliderValLabel">Interval: </span><span id="ex6SliderVal">3s</span></div>
+
+          </div>
+
+          <div class="col">
+              <!--Bootstrap Carousel Checkbox Like-->
+              <label class="btn btn-success">
+                  <input id="id_like_btn" type="checkbox"> Like
+              </label>
+          </div>
+      </div>
+  </div>
+
+
+
+
+
+  <script>
+
+      var like_dict = {};
+      // Check actual Like state
+      function check_like_state() {
+          var src = $('.active').find('img').attr('src');
+          try {
+              if (like_dict[src] == true) {
+                  $("#id_like_btn").prop('checked', true);
+              }
+              else {
+                  $("#id_like_btn").prop('checked', false);
+              }
+          }
+          catch {
+              console.log('no state')
+          }
+
+      }
+      // jQuery Previous Button
+      $("#id_btn_prev").click(function () {
+          $("#carouselExampleIndicators").carousel("prev");
+
+          $(document).ready(function () {
+
+              $('#carouselExampleIndicators').on('slid.bs.carousel', function () {
+                  var src = $('.active').find('img').attr('src');
+                  check_like_state()
+              });
+              forward = false;
+              image_event(markers_and_infos_json[src]);
+
+          });
+      });
+
+      // jQuery Play Button
+      $("#id_btn_play").click(function () {
+          $("#carouselExampleIndicators").carousel("cycle");
+
+          play_bool = true;
+          $('#carouselExampleIndicators').on('slid.bs.carousel', function () {
+                  var src = $('.active').find('img').attr('src');
+                  check_like_state()
+              });
+          forward = true;
+          image_event(markers_and_infos_json[src]);
+      });
+
+      // jQuery Pause Button
+      $("#id_btn_pause").click(function () {
+          $("#carouselExampleIndicators").carousel("pause");
+          play_bool = false;
+      });
+
+      // jQuery Next Button
+      $("#id_btn_next").click(function () {
+
+          $("#carouselExampleIndicators").carousel("next");
+          $(document).ready(function () {
+
+              $('#carouselExampleIndicators').on('slid.bs.carousel', function () {
+                  var src = $('.active').find('img').attr('src');
+                  check_like_state()
+              });
+              forward = true;
+              image_event(markers_and_infos_json[src]);
+          });
+      });
+
+      // jQuery get state of slider
+      $("#ex6").slider();
+      $("#ex6").on("slide", function (slideEvt) {
+          $("#ex6SliderVal").text(String(slideEvt.value) + 's');
+          const options = $("#carouselExampleIndicators").data()['bs.carousel']["_config"];
+          options.interval = slideEvt.value * 1000;
+      });
+
+      // jQuery handle Like checkbox change events
+      $('#id_like_btn').change(function () {
+          var src = $('.active').find('img').attr('src');
+          if (document.getElementById('id_like_btn').checked) {
+              like_dict[src] = true;
+          } else {
+              like_dict[src] = false;
+          }
+      });
+
+      // jQuery get actual source and update like_dict when slide changes
+      $(document).ready(function () {
+          $('#carouselExampleIndicators').on('slid.bs.carousel', function () {
+              var src = $('.active').find('img').attr('src');
+              check_like_state()
+          });
+      });
+
+
+
+      // jQuery to lazy load images
+      var cHeight = 0;
+      $('#carouselExampleIndicators').on('slide.bs.carousel', function (e) {
+
+          var $nextImage = $(e.relatedTarget).find('img');
+
+          $activeItem = $('.active.item', this);
+
+          // prevents the slide decrease in height
+          if (cHeight == 0) {
+              cHeight = $(this).height();
+              $activeItem.next('.item').height(cHeight);
+          }
+
+          // prevents the loaded image if it is already loaded
+          var src = $nextImage.data('lazy-load-src');
+
+          if (typeof src !== "undefined" && src != "") {
+              $nextImage.attr('src', src)
+              $nextImage.data('lazy-load-src', '');
+          }
+      });
+
+      </script>
+
+
+
+
+
+
+      <p>text</p>
+      <div class="wrapper_hover">
+
+      <div id='id_controls_show_hide' style="display: none">This to show on hover</div>
+      </div>
+<script>
+// jQuery show hide div on over
+
+
+$(".wrapper_hover").mouseover(function(){
+     $("#id_controls_show_hide").show();
+ });
+
+ $(".wrapper_hover").mouseleave(function(){
+      $("#id_controls_show_hide").hide();
+  });
+</script>
+
+</body>
+
+</html>

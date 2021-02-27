@@ -1,0 +1,10 @@
+web_app_atw/data/
+web_app_atw/filter_result.html
+web_app_atw/images.xlsx
+web_app_atw/like_setting.json
+web_app_atw/setting.json
+
+
+
+notebooks/data
+notebooks/utils

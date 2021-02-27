@@ -1,0 +1,216 @@
+<!--File Browser: Choose Classification file-->
+<div id="browser_table">
+  <div class="custom-file mb-2">
+    <input id="id_class_repFile_input" type="file" class="custom-file-input" >
+    <label id="id_label_for_custom_file" class="custom-file-label"
+      for="id_class_repFile_input">{{ class_rep_file_path }}</label>
+  </div>
+
+  <!--Google Maps API: Insert Your Google Maps API Key-->
+  <div class="input-group mb-3">
+    <input id="id_gps_api_input" type="text" class="form-control" value="{{ google_api }}"
+      aria-label="Insert Your Google Maps API Key" aria-describedby="basic-addon2">
+    <div class="input-group-append">
+      <button id="id_gps_api_save_button" class="btn btn-outline-secondary" type="button">Save</button>
+    </div>
+  </div>
+
+  <table class="table table-striped w-auto small">
+
+    <tbody>
+      <!--Classification Row-->
+      <tr>
+        <td>Classification</td>
+        <td>
+
+          <div class="custom-control custom-checkbox">
+            <input id="id_check_classification" type="checkbox" class="custom-control-input"
+              {% if check_classification==true %}checked{% else %}{% endif %}>
+            <label class="custom-control-label" for="id_check_classification">Filter</label>
+          </div>
+
+        </td>
+        <td>
+          <div class="container">
+            <div class="row">
+
+              <div class="col">
+                <select id="id_select_1" class="custom-select custom-select-sm">
+                  {% for each in combined_class_list %}
+
+                  <option value="{{ each }}" {% if each == selected_1 %} selected {% endif %}>{{ each }}</option>
+
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col">
+                <select id="id_select_2" class="custom-select custom-select-sm">
+                  {% for each in combined_class_list %}
+
+                  <option value="{{ each }}" {% if each == selected_2 %} selected {% endif %}>{{ each }}</option>
+
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="w-100"></div>
+              <div class="col">
+                <select id="id_select_3" class="custom-select custom-select-sm">
+                  {% for each in combined_class_list %}
+
+                  <option value="{{ each }}" {% if each == selected_3 %} selected {% endif %}>{{ each }}</option>
+
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col">
+                <select id="id_select_4" class="custom-select custom-select-sm">
+                  {% for each in combined_class_list %}
+
+                  <option value="{{ each }}" {% if each == selected_4 %} selected {% endif %}>{{ each }}</option>
+
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+        </td>
+
+        <td>
+          <div class="container">
+            <div class="row">
+
+              <div class="col">
+                <select id="id_select_5" class="custom-select custom-select-sm">
+                  {% for each in combined_class_list %}
+
+                  <option value="{{ each }}" {% if each == selected_5 %} selected {% endif %}>{{ each }}</option>
+
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col">
+                <select id="id_select_6" class="custom-select custom-select-sm">
+                  {% for each in combined_class_list %}
+
+                  <option value="{{ each }}" {% if each == selected_6 %} selected {% endif %}>{{ each }}</option>
+
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="w-100"></div>
+              <div class="col">
+                <select id="id_select_7" class="custom-select custom-select-sm">
+                  {% for each in combined_class_list %}
+
+                  <option value="{{ each }}" {% if each == selected_7 %} selected {% endif %}>{{ each }}</option>
+
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col">
+                <select id="id_select_8" class="custom-select custom-select-sm">
+                  {% for each in combined_class_list %}
+
+                  <option value="{{ each }}" {% if each == selected_8 %} selected {% endif %}>{{ each }}</option>
+
+                  {% endfor %}
+                </select>
+              </div>
+
+            </div>
+          </div>
+
+        </td>
+      </tr>
+
+      <!--Date Row-->
+      <tr>
+        <td>Date</td>
+
+        <td>
+          <div class="custom-control custom-checkbox">
+            <input id="id_check_date" type="checkbox" class="custom-control-input"
+              {% if check_date==true %}checked{% else %}{% endif %}>
+            <label class="custom-control-label" for="id_check_date">Filter</label>
+          </div>
+        </td>
+
+        <td>
+          <div class="container">
+            <div class="row">
+              <div class="col">
+                <label for="start">Start date:</label>
+                <input id="id_start_date" type="date" name="trip-start" value="{{ start_date }}" min="1900-01-01"
+                  max="2100-12-31">
+              </div>
+              <div class="col">
+                <label for="start">End date:</label>
+                <input id="id_end_date" type="date" name="trip-end" value="{{ end_date }}" min="1900-01-01"
+                  max="2100-12-31">
+              </div>
+            </div>
+          </div>
+        </td>
+
+        <td>
+          <div class="container">
+            <div class="row">
+              <div class="col">
+                <!--Load Favourites Button-->
+                <button id="id_load_fav_button" type="button" class="btn btn-success m-1">Load Favourites</button>
+              </div>
+              <div class="col">
+                <!--Export Table Button-->
+                <button id="id_export_table_button" type="button" class="btn btn-success m-1">Export Table</button>
+              </div>
+            </div>
+          </div>
+        </td>
+
+      </tr>
+      <!--GPS Row-->
+      <tr>
+        <td>GPS</td>
+        <td>
+          <div class="custom-control custom-checkbox">
+            <input id="id_check_gps" type="checkbox" class="custom-control-input"
+              {% if check_map==true %}checked{% else %}{% endif %}>
+            <label class="custom-control-label" for="id_check_gps">Map</label>
+          </div>
+        </td>
+
+        <td>
+          <div class="container">
+            <div class="row">
+              <div id='id_input_text_lat' class="col">{{ current_location_lat }}</div>
+              <div id='id_input_text_long' class="col">{{ current_location_lon }}</div>
+            </div>
+          </div>
+        </td>
+
+        <td>
+          <div class="container">
+            <div class="row">
+              <div class="col">
+                <!--Save Favourites Button-->
+                <button id="id_save_fav_button" type="button" class="btn btn-success m-1">Save Favourites</button>
+              </div>
+              <div class="col">
+                <!--Apply Filter Button-->
+                <button id="id_submit_button" type="button" class="btn btn-success m-1">Apply Filter</button>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+    </tbody>
+  </table>
+
+</div>
