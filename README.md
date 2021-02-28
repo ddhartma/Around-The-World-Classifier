@@ -2,42 +2,51 @@
 
 This is a Flask webserver application. It incorporates Jupyter notebook operation and web page visualization of a deep learning - image classification topic. Via Jupyter notebooks the deep learning events and data exctration (image classification, GPS data, datetime) are processed, evaluated and documented. Image uploads, data analysis and classification results are organized and shown via web pages. Data analysis visualization is supported by Plotly plots, tables and image bags.
 
+## What is the goal of this project
+Suppose, you collected thousands of images during a long-term travel and now you want to filter out an image subset based on datetime and/or object classification and/or GPS data. For example could create a funny story about your travel based on showing only images to the audience with certain objects on it (For example: "You want to show only images where one can find a beach a sunset or even tiny things like water bottles from June till July 2014"). For those filtering you cou could use a web app. This is the purpose of this project. 
 
-## What is the goal of this notebook
-This notebook, has four purposes:
-1. It extracts image datetimes of images (if available)
-2. It extracts image GPS data (if available)
-3. It provides object classification via yolo3v and ImageNet.
-4. It creates an Classifcation-Meta-Data Report based on the extracted data as a Pandas DataFrame. This will be the main output for the web app.
-
-As an example: this could be intersting if you traveled for a long time, collected thousands of images and now you want to filter out an image subset. Or maybe you want to create a funny story of your travel based on showing only images to the audience with certain objects on it (For example: "Show me only images of my **Around The World Travel** with bottles on it") 
-
-## How is the Data collected?
-- Datetimes and GPS data are extracted from the image meta data using the pillow library.
-- The photo classification is realized in two different approaches:
-    1. by using a yolov3 object detection algorithm. Here, I am using yolov3 pretrained weights. Deep Learning Inference with own images enables a detection of up to 80 different classes within one image. A boundary box with a class description is provided
-    2. by using a convolutional neural network (CNN) based pretrained model from Torchvision via Transfer Learning. As a standard VGG16 is chosen. However, you can replace VGG16 by any other torchvision model. VGG16 is using the whole ImageNet classification system, The total number of classes is 1000. The file **data/imagenet_classes.txt** provides a dictionary of all one 1000 classes.
-
-## How is the output of this notebook organized
-- The main output is a Pandas DataFrame stored as a csv file '***images.csv***'. This DataFrame will be used by a web app called ***Around The World Classifier***. The DataFrame contains classification and meta data information of your whole image set. The web app uses this information to show the user correponding images based on his search criteria.
-- In adition, the classification-Meta-Data report will be exported as an html table with thumbnail images (***filter_report.html***)
-- Images detected by Yolo are stored with object boundary in a separate folder called **images_yolo**.
-- Images with one or more persons detected by Yolo are addionally stored in a folder called ***images_personal***. This subset will be the base for future projects CNN based classifier projects for personal detection (see below)
-
-- A as well as stored in an html table (**your_image_folder_name.html**).
-
-## What will be done in the future?
-In the future will be implemented:
-- a GPS filter via the haversine method. This will allow you to filter images based on adjustable radial distances referred to a provided GPS location (longitude and latitude).
-- a third  CNN based classifier with a layer combination of three times 'Conv-ReLU-MaxPool'. This approach should be deeply enough for sufficient feature extraction and for an appropriate image size/feature reduction. The goal of this CNN is to filter peronalized images, e.g. to identify images of yourself. However, for this classification step you have to provide a dataset of at least 500 personolized images. This CNN will be not pretrained.
-
-
-## Aim of the web app
-The web app provides a user inteface to enable a user an interaction with the Classification-Meta-Data Report and the image database. A user can filter out images based on his filter criteria. Filter criteria are:
+## The web app
+The web app provides a user inteface to enable a user an interaction with his image database. A user can filter out images based on his filter criteria. Filter criteria are:
     - certain time ranges
     - and/or single or multiple class objects like ('show me only images with beaches and/or persons and/or birds and/or ...').
     - geolocated ranges via radial distance from a GPS point
 
+## In order to prepare the web app...
+3 Jupyter Notebooks are necessary for the important Data Engineering/Science part
+
+### 1_ETL_aorund_the_world_classifier.ipynb
+
+This notebook is an ETL (Exract-Transform-Load) step, which is needed for an optimized Flask web app workflow. Its goals are: 
+- It reads in images of an image dataset that you provided 
+- It extracts meta data information out of each image  
+- It transforms the data so that it can be used for image classification and for the web_app workflow.
+- It corrects the rotation of images and by using image exif data 
+- It deletes damaged images 
+- It sorts images based on datetime
+- it renames images to simplify image access for the web_app 
+- It stores the corrected images in a new folder called ***./images***
+- It creates and stores an Image Meta Data Report as a pickle file
+
+### 2_ML_around_the_worl_classifier.ipynb
+The purposes of this notebook are:
+- It provides object classification via yolo3v and ImageNet.
+- It creates an Classifcation-Meta-Data Report based on the extracted data as a Pandas DataFrame. The first part of this report was done in the ETL notebook before. This report will be the main output for the web app.
+
+## How is the Data collected?
+- Datetimes and GPS data are extracted from the image meta data using the pillow library in the ETL notebook (1_ETL_around_the_world_clssifier.ipynb)
+- The photo classification is done in two different approaches:
+    1. by using a yolov3 object detection algorithm. Here, I am using yolov3 pretrained weights. Deep Learning Inference with own images enables a detection of up to 80 different classes within one image. A boundary box with a class description is provided
+    2. by using a convolutional neural network (CNN) based on a pretrained model from Torchvision via Transfer Learning. As a standard VGG16 is chosen. However, you can replace VGG16 by any other torchvision model. VGG16 is using the whole ImageNet classification system, The total number of classes is 1000. The file **data/imagenet_classes.txt** provides a dictionary of all one 1000 classes.
+
+## How is the output of the notebooks organized
+- The **output of 1_ETL_around_the_world_classifier.ipynb** is a newly created folder called ***./images***. This folder contains all your readable images, with corrected orientation (auto corrected using exif data), sorted and renamed by datetime. This folder is the source for the following image classification step and for the web app. In addition, this notebook exports the first part of the Classification-Meta-Data-Report as ***images.pkl*** with filepath, Datetime and GPS information. 
+- The ***output of 2_ML_around_the_world_classifier.ipynb*** is an update of ***images.pkl*** with image classification results. In adition, the classification-Meta-Data report will be exported as an html table with thumbnail images (***filter_report.html***). Images detected by Yolo are stored with object boundary in a separate folder called **images_yolo**. Images with one or more persons detected by Yolo are addionally stored in a folder called ***images_personal***. This subset will be the base for future projects CNN based classifier projects for personal detection (see below) 
+- The notebook ***3_Filter_around_the_world_classifier.ipynb*** contains filtering code for the web. This notebook contains filter tests for th web app file ***/wrangling_scripts/filter.data.py***. There is no direct output from this file which is needed for the web app.
+
+## What is still missing and will be implemented in the future?
+In the future will be implemented (***help is welcome here***):
+- a GPS filter via the haversine method. This will allow you to filter images based on adjustable radial distances referred to a provided GPS location (longitude and latitude).
+- a third  CNN based classifier with a layer combination of three times 'Conv-ReLU-MaxPool'. This approach should be deeply enough for sufficient feature extraction and for an appropriate image size/feature reduction. The goal of this CNN is to filter peronalized images, e.g. to identify images of yourself. However, for this classification step you have to provide a significant dataset of personolized images.
 
 ## Getting Started
 
