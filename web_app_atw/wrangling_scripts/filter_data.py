@@ -292,7 +292,7 @@ def check_file_path(row):
         return False
 
 def get_thumbnail(path):
-    """ Create a thumbnaul image for the actual chosen image
+    """ Create a thumbnail image for the actual chosen image
         
         INPUTS:
         ------------
