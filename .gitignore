@@ -1,4 +1,10 @@
-web_app_atw/data/
+
+web_app_atw/data/data/config/yolov3.weights
+web_app_atw/data/python_html_creator_gui_additional
+web_app_atw/data__pycache__
+
+web_app_atw/data/.ipynb_checkpoints/
+
 web_app_atw/filter_result.html
 web_app_atw/images.xlsx
 web_app_atw/like_setting.json
@@ -8,3 +14,8 @@ web_app_atw/static/wheelzoom.js
 
 notebooks/data
 notebooks/utils
+
+web_app_atw/wrangling_scripts/__pycache__/filter_data.cpython-37.pyc
+web_app_atw/data/data/__pycache__/models.cpython-35.pyc
+
+web_app_atw/data/python_html_creator_gui_additional.ui
