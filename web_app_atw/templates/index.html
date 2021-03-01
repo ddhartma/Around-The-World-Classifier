@@ -166,9 +166,6 @@
         // Update website variables
         function update_vars() {
 
-
-
-            var class_rep_file_path = $('#id_label_for_custom_file').text();
             var google_api = $('#id_gps_api_input').val();
 
             var check_classification = $("#id_check_classification").is(':checked');
@@ -194,7 +191,6 @@
             //var current_radius = $('#input_range_text_radius').val()
 
             var data = {
-                'class_rep_file_path': class_rep_file_path,
                 'google_api': google_api,
                 'check_classification': check_classification,
                 'check_date': check_date,
@@ -260,15 +256,7 @@
         }
 
 
-        // Change and Get File from csv file browser
-        $('#id_class_repFile_input').change(function () {
-            var class_rep_file_path = $('#id_label_for_custom_file').text();
-
-            $('#id_label_for_custom_file').text(class_rep_file_path);
-            console.log(class_rep_file_path)
-        });
-
-
+    
         // APPLY FILTER BUTTON --> Send Data to Python 
         $('#id_submit_button').click(function () {
             alert('Your actual filter choice is going to be collected now. Please Wait while Loading!')
@@ -279,10 +267,9 @@
 
         // SAVE BUTTON --> Update csv file path and Goggle API AND Send Data to Python 
         $('#id_gps_api_save_button').click(function () {
-            var class_rep_file_path = $('#id_label_for_custom_file').text();
             var google_api = $('#id_gps_api_input').val();
             alert('The path to the classification report and your Google API key s going to be saved now. Filename: setting.json')
-            data_to_update = [['save_path_api', true], ['class_rep_file_path', class_rep_file_path], ['google_api', google_api]]
+            data_to_update = [['save_path_api', true], ['google_api', google_api]]
             send_data_to_python(update = true, data_to_update)
         });
 
