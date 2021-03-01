@@ -86,10 +86,15 @@
         }
 
     }
+ 
+
+  // Update GPS And Info Description
+
 
     function update_gps_and_description(src) {
 
         file_elmts = src.split('/')
+       
         file = file_elmts[file_elmts.length - 1]
 
         images = {{ image_set | safe }};
@@ -119,8 +124,8 @@
                 update_gps_and_description(src)
             });
             forward = false;
-            var data_set = {{ markers_and_infos_json | safe }}
-            image_event(data_set[src]);
+            //var data_set = {{ markers_and_infos_json | safe }}
+            //image_event(data_set[src]);
 
         });
     });
@@ -166,7 +171,7 @@
     $("#ex6").on("slide", function (slideEvt) {
         
         var imageUrl = $(this).data('link');
-        $("#SHOWCASEIMG".attr("src",imageUrl));
+        
 
         $("#ex6SliderVal").text(String(slideEvt.value) + 's');
         const options = $("#carouselExampleIndicators").data()['bs.carousel']["_config"];
@@ -189,7 +194,7 @@
             var src = $('.active').find('img').attr('src');
             check_like_state()
             var imageUrl = $(this).data('link');
-            $("#SHOWCASEIMG".attr("src",imageUrl));
+            
             update_gps_and_description(src)
         });
     });
