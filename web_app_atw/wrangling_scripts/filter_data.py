@@ -13,10 +13,12 @@ from io import StringIO, BytesIO
 
 from IPython.display import HTML
 
+from datetime import datetime, timedelta
+
 # File to collect data of images to display in web app 
 
 def load_data(path):
-    """ Load csv (or excel) file with classification and meta data results
+    """ Load pkl file with classification and meta data results
     
         INPUTS:
         ------------
@@ -27,7 +29,7 @@ def load_data(path):
         df (pandas dataframe) dataframe containing the classification report
     """
     
-    df = pd.read_excel(path)
+    df = pd.read_pickle(path)
     try: 
         del df['Unnamed: 0']
     except:
@@ -42,11 +44,11 @@ def perfectEval(anonstring):
         INPUTS:
         ------------
             anonstring - (string) a string in the form "['elmt1', 'elmt2', 'elmt2', ...]" 
-                         which should be transformed  to a list ['elmt1', 'elmt2', 'elmt2', ...]
+                         which should be transformed  to a list as ['elmt1', 'elmt2', 'elmt2', ...]
         
         OUTPUTS:
         ------------
-            ev (lis) - a list transformation of the input string
+            ev (list) - a list transformation of the input string
     """
     try:
         ev = ast.literal_eval(anonstring)
@@ -57,7 +59,7 @@ def perfectEval(anonstring):
         return ev
 
 def get_yolo_and_imagenet_lists(path):
-    """ Extract Yolo lists and ImageNEt classification lists from Classification report
+    """ Extract Yolo lists and ImageNet classification lists from the Classification-Meta-Data report.
         Those lists are needed for web app select menus and for displaying filter results
         
         INPUTS:
@@ -66,23 +68,24 @@ def get_yolo_and_imagenet_lists(path):
         
         OUTPUTS:
         ------------
-            df - (pandas dataframe) dataframe of the the classification report
-            yolo_flat_list - (list) list of all in df observed Yolo classes
-            imageNet_flat_list - (list) list of all in df observed ImageNet classes
+            df - (pandas dataframe) of the classification report
+            yolo_flat_list - (list) of all in df observed Yolo classes
+            imageNet_flat_list - (list) of all in df observed ImageNet classes
             
     """
     
     df = load_data(path)
     # yolo classifications
-    yolo_list = [ast.literal_eval(x) for x in df['classes_yolo'].tolist()]
+    yolo_list = df['classes_yolo'].tolist()
     yolo_flat_list = [item for sublist in yolo_list for item in sublist]
     yolo_flat_list = list(set(yolo_flat_list))
-
+    #print('yolo_flat_list', yolo_flat_list)
+    
     # ImageNet classifications
-    imageNet_list =  [perfectEval(x) for x in df['classes_ImgNet'].tolist()]
+    imageNet_list = df['classes_ImgNet'].tolist()
     imageNet_flat_list = [item for sublist in imageNet_list for item in sublist]
     imageNet_flat_list = list(set(imageNet_flat_list))
-
+    #print('imageNet_flat_list', imageNet_flat_list)
 
     return df, yolo_flat_list, imageNet_flat_list
 
@@ -95,10 +98,10 @@ def create_combined_class_list(path):
         
         OUTPUTS:
         ------------
-            df - (pandas dataframe) dataframe of the the classification report
-            combined_class_list - (list) list of combined Yolo and ImageNEt lists
-            yolo_flat_list - (list) list of all in df observed Yolo classes
-            imageNet_flat_list - (list) list of all in df observed ImageNet classes
+            df - (pandas dataframe) of the the classification report
+            combined_class_list - (list) of combined Yolo and ImageNEt lists
+            yolo_flat_list - (list) of all in df observed Yolo classes
+            imageNet_flat_list - (list) of all in df observed ImageNet classes
     """
     
     df, yolo_flat_list, imageNet_flat_list = get_yolo_and_imagenet_lists(path)
@@ -114,18 +117,43 @@ def create_combined_class_list(path):
     return df, combined_class_list, yolo_flat_list, imageNet_flat_list
 
 
-    
-def filter_by_datetime(df, data):
-    """ Filter Classification Report via DateTime (start and end datetime)
+def get_first_lat_datetime_value(df):
+    """ Filter Classification Report via datetime (start and end datetime)
         
         INPUTS:
         ------------
-            df - (pandas dataframe) dataframe of the the classification report
-            data - (dictionary) a dictionary used for filtering and output data storage
+            df - (pandas dataframe) of the the classification report
+            data - (dictionary) used for filtering and output data storage
         
         OUTPUTS:
         ------------
-            df_filter - (pandas dataframe) dataframe of the the classification report 
+            first_dt - (datetime) first date in in dataset
+            last_dt - (datetime) last date in dataset
+    """
+    
+    # first  datetime entry
+    first_dt = df['date_time'].iloc[0].date() - timedelta(days=1)
+
+
+    # last datetime entry
+    last_dt = df['date_time'].iloc[-1].date() + timedelta(days=1)
+    
+
+    
+    return first_dt, last_dt
+
+ 
+def filter_by_datetime(df, data):
+    """ Filter Classification Report via datetime (start and end datetime)
+        
+        INPUTS:
+        ------------
+            df - (pandas dataframe) of the the classification report
+            data - (dictionary) used for filtering and output data storage
+        
+        OUTPUTS:
+        ------------
+            df_filter - (pandas dataframe) of the the classification report 
                         filtered by datetime start and end point
     """
     
@@ -144,13 +172,13 @@ def filter_by_class(df, data):
         
         INPUTS:
         ------------
-            df - (pandas dataframe) dataframe of the the classification report
-            data - (dictionary) a dictionary used for filtering and output data storage
+            df - (pandas dataframe) of the the classification report
+            data - (dictionary) used for filtering and output data storage
         
         
         OUTPUTS:
         ------------
-            df_filter - (pandas dataframe) dataframe of the the classification report 
+            df_filter - (pandas dataframe) of the the classification report 
                         filtered by class items of Yolo and ImageNet
     """
     
@@ -191,27 +219,27 @@ def create_image_infosets(df_filter, data):
         
         INPUTS:
         ------------
-            df_filter - (pandas dataframe) dataframe of the the classification report 
+            df_filter - (pandas dataframe) of the the classification report 
                         filtered by datetime AND class items of Yolo and ImageNet
         
         OUTPUTS:
         ------------
-            df_filter - (pandas dataframe) dataframe of the the classification report 
+            df_filter - (pandas dataframe) of the the classification report 
                         GPS info corrected for Google Maps, must be string of tuple for Google Maps 
             image_set - (list) paths to the actual set of images
-            date_time - (list) list of datetimes for actual images
-            GPS - (list) list of GPS coordinates  for actual images
-            classes_yolo - (list) list of lists od Yolo classes  for actual images
-            classes_ImgNet - (list) list of lists od ImageNet classes  for actual images
-            markers_and_infos - (list) list of lists with info of the actual image set 
+            date_time - (list) of datetimes for actual images
+            GPS - (list) of GPS coordinates  for actual images
+            classes_yolo - (list) of lists od Yolo classes  for actual images
+            classes_ImgNet - (list) of lists od ImageNet classes  for actual images
+            markers_and_infos - (list) of lists with info of the actual image set 
                                 (latitude, longitudes, image set, datetimes, GPS as tuple, yolo and Imagenet classes)
             
     """
     df_filter.loc[df_filter.GPS == '(None, None)', "GPS"] = "('None', 'None')"
 
-    df_filter = df_filter.sort_values('img_path',ascending=True)
+    df_filter = df_filter.sort_values('file',ascending=True)
 
-    image_set = [os.path.split(path)[1] for path in df_filter['img_path'].tolist()]
+    image_set = [os.path.split(path)[1] for path in df_filter['file'].tolist()]
     
     data['image_set'] = image_set
 
@@ -220,8 +248,8 @@ def create_image_infosets(df_filter, data):
     classes_yolo = df_filter['classes_yolo'].tolist()
     classes_ImgNet = df_filter['classes_ImgNet'].tolist()
     
-    lats = [eval(x)[0] for x in df_filter['GPS'].tolist()]
-    longs = [eval(x)[1] for x in df_filter['GPS'].tolist()]
+    lats = [x[0] for x in df_filter['GPS'].tolist()]
+    longs = [x[1] for x in df_filter['GPS'].tolist()]
     markers_and_infos = [lats,
                         longs,
                         image_set,
@@ -231,12 +259,12 @@ def create_image_infosets(df_filter, data):
                         classes_ImgNet
                         ]
 
-    for kundex, elmt in enumerate(markers_and_infos[4]):
-        markers_and_infos[4][kundex] = list(ast.literal_eval(elmt))
-    for kundex, elmt in enumerate(markers_and_infos[5]):
-        markers_and_infos[5][kundex] = ast.literal_eval(elmt)
-    for kundex, elmt in enumerate(markers_and_infos[6]):
-        markers_and_infos[6][kundex] = ast.literal_eval(elmt)
+    #for kundex, elmt in enumerate(markers_and_infos[4]):
+    #    markers_and_infos[4][kundex] = list(ast.literal_eval(elmt))
+    #for kundex, elmt in enumerate(markers_and_infos[5]):
+    #    markers_and_infos[5][kundex] = ast.literal_eval(elmt)
+    #for kundex, elmt in enumerate(markers_and_infos[6]):
+    #    markers_and_infos[6][kundex] = ast.literal_eval(elmt)
 
     data['markers_and_infos'] = markers_and_infos
 
@@ -335,18 +363,18 @@ def df_as_html(df, base_dir):
         
         INPUTS:
         ------------
-            df - (pandas dataframe) dataframe of the the classification report 
+            df - (pandas dataframe) of the the classification report 
                  (eventiully filtered by datetime AND class items of Yolo and ImageNet)
             
         
         OUTPUTS:
         ------------
             No return 
-            filter_result.html - an html file containing the filter output with thumbnail images
+            filter_result.html - (file) an html file containing the filter output with thumbnail images
     """
     pd.set_option('display.max_colwidth', -1)
 
-    df['image'] = df.apply(lambda row: get_thumbnail(set_path_for_image(row['img_path'], base_dir, 'images')), axis = 1)
+    df['image'] = df.apply(lambda row: get_thumbnail(set_path_for_image(row['path_to_file'], base_dir, 'images')), axis = 1)
     df['exists'] = df.apply(lambda row: check_file_path(set_path_for_image(row['img_path_yolo'], base_dir, 'images_yolo')), axis = 1)
 
     df['image_yolo'] = df.apply(lambda row: get_thumbnail(set_path_for_image(row['img_path_yolo'], base_dir, 'images_yolo')) if row['exists'] == True else None, axis = 1)
@@ -376,18 +404,18 @@ def get_filtered_data(df_filter, data):
         INPUTS:
         ------------
             df_filter (pandas dataframe) the NON filtered (just loaded dataframe) of the the classification report file
-            data - (dictionary) a dictionary used for filtering and output data storage
+            data - (dictionary) used for filtering and output data storage
             
         OUTPUTS:
         ------------
             df_filter - (pandas dataframe) updated (filtered) dataframe of the the classification report 
             data - (dictionary) updated data dictionary (key 'image_set' is updated)
             image_set - (list) paths to the actual set of images
-            date_time - (list) list of datetimes for actual images
-            GPS - (list) list of GPS coordinates  for actual images
-            classes_yolo - (list) list of lists od Yolo classes  for actual images
-            classes_ImgNet - (list) list of lists od ImageNet classes  for actual images 
-            markers_and_infos - (list) list of lists with info of the actual image set 
+            date_time - (list) of datetimes for actual images
+            GPS - (list) of GPS coordinates  for actual images
+            classes_yolo - (list) of lists od Yolo classes  for actual images
+            classes_ImgNet - (list) of lists od ImageNet classes  for actual images 
+            markers_and_infos - (list) of lists with info of the actual image set 
                                 (latitude, longitudes, image set, datetimes, GPS as tuple, yolo and Imagenet classes)  
     """
     
@@ -426,14 +454,45 @@ def get_filtered_data(df_filter, data):
 
 
 def load_likes(path, data):
+    """ Action, when 'Load Favoirites' Button was clicked. Load likes from like_setting.json
+
+        INPUTS:
+        ------------
+            path - (string) path to images.pkl
+            data - (dictionary) the data dictionary with control settings from run.py
+        
+        OUTPUTS:
+        ------------
+            df_filter - (pandas dataframe) updated (filtered) dataframe of the the classification report 
+            data - (dictionary) updated data dictionary (key 'image_set' is updated)
+            image_set - (list) paths to the actual set of images
+            date_time - (list) of datetimes for actual images
+            GPS - (list) of GPS coordinates  for actual images
+            classes_yolo - (list) of lists od Yolo classes  for actual images
+            classes_ImgNet - (list) of lists od ImageNet classes  for actual images 
+            markers_and_infos - (list) of lists with info of the actual image set 
+                                (latitude, longitudes, image set, datetimes, GPS as tuple, yolo and Imagenet classes)  
+
+    """
     df = load_data(path)
     with open('like_setting.json') as f:
         like_setting = json.load(f) 
-    df_filter = df[df['img_path'].apply(lambda x: os.path.split(x)[1] in list(like_setting.keys()))]
+    df_filter = df[df['path_to_file'].apply(lambda x: os.path.split(x)[1] in list(like_setting.keys()))]
     df_filter, data, image_set, date_time, GPS, classes_yolo, classes_ImgNet, markers_and_infos = create_image_infosets(df_filter, data)
     return df_filter, data, image_set, date_time, GPS, classes_yolo, classes_ImgNet, markers_and_infos
 
 def save_likes(data):
+    """ Action, when 'Save Favourites' Button was clicked. Save like setting in like_setting.json
+
+        INPUTS:
+        ------------
+            data - (dictionary) the data dictionary with control settings from run.py
+
+        OUTPUTS:
+        ------------
+            save actual like settings in like_setting.json
+
+    """
     with open('like_setting.json') as f:
         like_setting = json.load(f)
 

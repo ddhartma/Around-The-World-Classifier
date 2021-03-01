@@ -1,4 +1,4 @@
-from wrangling_scripts.filter_data import create_combined_class_list, get_filtered_data, df_as_html, save_likes, load_likes
+from wrangling_scripts.filter_data import create_combined_class_list, get_filtered_data, df_as_html, save_likes, load_likes, get_first_lat_datetime_value
 import json
 
 from flask import Flask
@@ -8,9 +8,13 @@ from flask import send_file, send_from_directory
 import os
 
 cwd = os.getcwd()
+# Start Flask app
+app = Flask(__name__)
 
 
 class Data():
+	""" Data bag class with 'data' variable which is a shared variable in functions of run.py and filter_data.py 
+	"""
 	# Initialize data controls
 	data = {'check_classification': True,
 			'check_date': True,
@@ -23,40 +27,32 @@ class Data():
 			'selected_6': 'Open this select menu',
 			'selected_7': 'Open this select menu',
 			'selected_8': 'Open this select menu',
-			'start_date': "2014-04-05",
-			'end_date': "2014-04-07",
 			'current_location_lat': 0,
 			'current_location_lon': 0,
-			#'current_zoom': 5,
+			#'current_zoom': 5,#
 			#'current_radius': 500,
 			}
 
 data_tank = Data() 
 data = data_tank.data
 
-# Set path to Classification report
+
 try:
 	with open('setting.json') as f:
 		setting = json.load(f) 
-	
-	data['class_rep_file_path'] = setting['class_rep_file_path']
 	data['google_api'] = setting['google_api']
 except:
-	data['class_rep_file_path'] = 'path/to/class_report'
 	data['google_api'] = 'YOUR_GOOGLE_API'
 
 
+# Set path to Classification report	
+data['class_rep_file_path'] = os.path.join(cwd, 'data', 'images.pkl')
+CLASS_REP_DIR = data['class_rep_file_path']
+	
 # Set main paths --> Base, ClassRep and Media 
 BASE_DIR = os.path.split(data['class_rep_file_path'])[0]
 
-# Check if stored path to classification path exists, if yes take it, if not set application path use test/example file 
-if os.path.isfile(data['class_rep_file_path']):
-    BASE_DIR = os.path.split(data['class_rep_file_path'])[0]
-    CLASS_REP_DIR = data['class_rep_file_path']
-else: 
-    BASE_DIR =  os.path.dirname(os.path.abspath(__file__))
-    CLASS_REP_DIR = os.path.join(BASE_DIR, 'images.xlsx')
-
+# Set Path to MEDIA DIR
 MEDIA_DIR = os.path.join(BASE_DIR, 'images').replace('\\', '/')
 
 print()
@@ -74,15 +70,31 @@ print()
 df, combined_class_list, yolo_flat_list, imageNet_flat_list = create_combined_class_list(CLASS_REP_DIR)
 data['combined_class_list'] = combined_class_list
 
+# Get first and last date of dataset
+first_dt, last_dt = get_first_lat_datetime_value(df)
+data['start_date'] = first_dt
+data['end_date'] = last_dt
+
 # Initialize df_filter, use only the first 20 images of the dataset
 df_filter, data, image_set, date_time, GPS, classes_yolo, classes_ImgNet, markers_and_infos  = get_filtered_data(df[:20], data)
 
-# Start Flask app
-app = Flask(__name__)
 
 # Main url
 @app.route('/')
 def index():
+	""" Flask main rendering function
+
+		INPUTS:
+		------------
+			None
+
+		OUTPUTS:
+		------------
+		 	render_template - (Flask function call) 
+			 				  index.html is main web page to be rendered.
+							  all other variables are needed in the web app for web control based on user interaction
+
+	"""
 	return render_template('index.html', 
 						class_rep_file_path=data['class_rep_file_path'],
 						google_api=data['google_api'],
@@ -106,11 +118,24 @@ def index():
 						#current_radius=data['current_radius'],
 						image_set=data['image_set'],
 						markers_and_infos=data['markers_and_infos'],
-						number_images=len(data['image_set']),
+						number_images=len(data['image_set'])
 						)
 # url after JS POST
 @app.route('/return_after_js/')
 def return_after_js():
+	""" Flask slave rendering function. Called after user hit the 'Apply Button' or 'Load Favorites' on the web page
+
+		INPUTS:
+		------------
+			None
+
+		OUTPUTS:
+		------------
+		 	render_template - (Flask function call) 
+			 				  index.html is main web page to be rendered.
+							  all other variables are needed in the web app for web control based on user interaction
+
+	"""
 	return render_template('index.html', 
 						class_rep_file_path=data['class_rep_file_path'],
 						google_api=data['google_api'],
@@ -140,15 +165,34 @@ def return_after_js():
 # connect images in HTML with MEDIA_DIR
 @app.route('/uploads/<path:filename>')
 def show_file(filename):
-    return send_from_directory(MEDIA_DIR, filename, as_attachment=True)
+	"""	Function needed for image loading. This function connects HTML image sources to the MEDIA_DIR
 
-# connect images in HTML with MEDIA_DIR
-@app.route('/uploads/')
-def send_file(filename):
-    return send_file(filename, mimetype='image/jpg')
+		INPUTS:
+		------------
+			filename - (string) image filename from Jinja code
+		
+		OUTPUTS:
+		------------
+			function call send_from_directory()
+
+	"""
+	
+	return send_from_directory(MEDIA_DIR, filename, as_attachment=True)
+
 
 # info print statetments after JS POST
 def redirect_filter_result(df_filter):
+	""" Print statements after POST from web page
+		Store actual df_filter as variable in class Data
+
+		INPUTS:
+		------------
+			df_filter - (pandas dataframe) actual filtered Classification-Meta-Data Report
+		
+		OUTPUTS:
+		------------
+			No return
+	"""
 	data_tank.df_filter = df_filter
 
 	print()
@@ -164,6 +208,15 @@ def redirect_filter_result(df_filter):
 
 # info print statetments after JS POST, state of checkboxes and button events
 def redirect_ui_status():
+	""" Print statements about UI control states in the web app
+
+		INPUTS:
+		------------
+			None
+		OUTPUTS:
+		------------
+			None
+	"""
 	print()
 	print("data['load_fav']", data['load_fav']) 
 	print("data['save_fav']", data['save_fav'])   
@@ -182,6 +235,18 @@ def redirect_ui_status():
 # Get results Back from Javascript SUBMIT BUTTON
 @app.route("/get_post_js_submit", methods=["POST"])
 def get_post_js_submit():
+	""" Function call after POST from web page
+
+		INPUTS:
+		------------
+			No direct 
+			Input is coming from javascript submission
+
+		OUTPUTS:
+		------------ 
+			No direct
+			function call redirect() -- see above
+	"""
 	if request.method == "POST":
 			data = data_tank.data
 			
