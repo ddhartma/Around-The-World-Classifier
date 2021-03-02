@@ -135,12 +135,11 @@ In the future will be implemented:
 - a third  CNN based classifier with a layer combination of three times 'Conv-ReLU-MaxPool'. This approach should be deeply enough for sufficient feature extraction and for an appropriate image size/feature reduction. The goal of this CNN will be to filter peronalized images, e.g. to identify images of yourself. 
 
 ## Setup Instructions <a name="setup"></a>
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+Let's get a copy of this repo and run it on your local machine for development and testing purposes.
 
 ### Prerequisites: Installation of Python via Anaconda and Command Line Interaface
 - Install [Anaconda](https://www.anaconda.com/distribution/). Install Python 3.7 - 64 Bit
-- You need a Command Line Interface (CLI). If you are a Window user install [git](https://git-scm.com/)). Under Mac OS use the pre-installed Terminal.
+- If you need a Command Line Interface (CLI) you could use [git](https://git-scm.com/) for example.
 - Upgrade Anaconda via
 ```
 $ conda upgrade conda
@@ -151,10 +150,12 @@ $ conda upgrade --all
 ```
 $ export PATH="/path/to/anaconda/bin:$PATH"
 ```
-The project installation is divided into two parts: Part A describes the cloning of the project and the installation of the project environment. Part B describes how to get Yolo weights and a Google Maps API.
+The project installation is divided into two parts: 
+- Part A describes how to clone this project and how to install the project environment. 
+- Part B describes how to get Yolo weights and a Google Maps API Key.
 
 ### Project installation Part A
-- Open your command line terminal
+- Open your preferred CLI
 - Change Directory to your project folder, e.g. `cd my_github_projects`
 - Clone the Github Project inside this folder with via:
 ```
