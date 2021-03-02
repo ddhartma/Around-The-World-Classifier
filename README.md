@@ -164,7 +164,7 @@ $ git clone https://github.com/ddhartma/Around-the-World-Classifier.git
 
 - Change Directory
 ```
-$ cd Around-The-World-Image-Classifier
+$ cd ./Around-the-World-Classifier/environments/
 ```
 
 - Create a new Python environment via the provided yml file. Inside your terminal write:
