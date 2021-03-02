@@ -4,7 +4,23 @@
 
 # Around The World Classifier
 
-## What is the goal of this project
+## Outline
+- [What is the goal of this project](#project_goal)
+- [The web app goal](#web_app_goal)
+- [The elemnts of the web app](#elements_web_app)
+- [In order to prepare the web app](#prep_web_app) 
+    - [1_ETL_aorund_the_world_classifier.ipynb](#1_etl)
+    - [2_ML_around_the_worl_classifier.ipynb](#2_ml)
+    - [3_Filter_around_the_world_classifier.ipynb](#3_filter)
+- [How is the Data collected?](#data_collect)
+- [How is the output of the notebooks organized](#output_organized)
+- [Detailed file list description](#file_descr)
+- [What is still missing and will be implemented in the future?](#still_miss)
+- [Setup Instructions](#setup)
+- [Acknowledgments](#Acknowledgments)
+- [Further Links](#Further_Links)
+
+## What is the goal of this project <a name="project_goal"></a>
 Suppose, you collected thousands of images during a long-term travel and now you want to filter out an image subset based on datetime, image objects and GPS data. Maybe you want to tell your friends a funny story about your travel based on "showing only images with certain objects or datetime ranges". For example: You want to show only images with persons in combination with a beach at sunset from June until July 2014 and/or for a certain geolocation. Or you are only interested in images where you can see a water bottle. Such interactive image filtering is the purpose of this project. 
 
 This is a Flask webserver application for image filtering. There are three types of filters:
@@ -16,12 +32,12 @@ The idea is to provide an image database and extract meta exif data (like GPS an
 
 The project incorporates Jupyter notebook operation with Python code for the data preparation and HTML/Javascript files - mainly based on Bootstrap - for the Flask web server.
 
-## The web app
+## The web app goal <a name="web_app_goal"></a>
 The web app provides a user inteface to allow an interaction with a image database. A user can filter out images based on his filter criteria. Below you can see a gif movie of the web app to get a first impression. 
 
 [![Demo CountPages alpha](https://j.gifs.com/nxBnNl.gif)](https://j.gifs.com/nxBnNl.gif)
 
-## The elemnts of the web app
+## The elements of the web app <a name="elements_web_app"></a>
 
 ![image1]
 
@@ -37,10 +53,10 @@ The main part of the web app consists of five segments.
 - ***Image carousel***: This bootstrap carousel slides through your filtered image subset. There are control buttons (Prev, Play, Pause, Next) as well as a slider to adjust the carousel sliding interval. With a 'Like button' you can highlight your best-off images. 
 
 
-## In order to prepare the web app...
+## In order to prepare the web app... <a name="prep_web_app"></a>
 3 Jupyter Notebooks are necessary for the important Data Engineering/Science part
 
-#### 1_ETL_aorund_the_world_classifier.ipynb
+#### 1_ETL_aorund_the_world_classifier.ipynb <a name="1_etl"></a>
 
 This notebook is an ETL (Exract-Transform-Load) step, which is needed for an optimized Flask web app workflow. Its goals are: 
 - It reads in images of an image dataset that you provided 
@@ -53,31 +69,31 @@ This notebook is an ETL (Exract-Transform-Load) step, which is needed for an opt
 - It stores the corrected images in a new folder called ***./images***
 - It creates and stores an Image-Meta-Data Report as a pickle file called ***images_meta.pkl***
 
-#### 2_ML_around_the_worl_classifier.ipynb
+#### 2_ML_around_the_worl_classifier.ipynb <a name="2_ml"></a>
 The purposes of this notebook are:
 - It classifies images via yolo3v and ImageNet.
 - It creates an Classifcation-Meta-Data Report based on the extracted data as a Pandas DataFrame. This report will be the main input for the web app.
 
-#### 3_Filter_around_the_world_classifier.ipynb
+#### 3_Filter_around_the_world_classifier.ipynb <a name="3_filter"></a>
 The purposes of this notebook are:
 - Develop and test code for /web_app_atw/wranglings_scripts/filter_data.py. The file filter_data.py contains the filter functions needed for the web app.
 - However, the output of this notebook is not needed for the web app.
 - This notebook is just a test for filtering algorithms based on datetime and classification objects.
 
 
-## How is the Data collected?
+## How is the Data collected? <a name="data_collect"></a>
 - In this repo a small image dataset (9 images) is provided as a demo. This image subset is extracted from a Kaggle image dataset: [736 geolocated Scotland images](https://www.kaggle.com/jbakerdstl/geolocated-imagery-dataset-scotland).
 - Datetimes and GPS data are extracted from the image meta data using the pillow library in the ETL notebook (1_ETL_around_the_world_clssifier.ipynb)
 - The photo classification is done in two different approaches:
     1. by using a ***yolov3*** object detection algorithm. Here, I am using yolov3 pretrained weights (248 MB, not in this repo, see download instructions below). Deep Learning Inference enables a detection of up to 80 different classes within one image. A boundary box with a class description is provided for each object detction within the image.
     2. by using a convolutional neural network (CNN) based on a ***pretrained model from Torchvision*** via ***Transfer Learning***. As a standard ***VGG16*** is chosen. However, you can replace VGG16 by any other torchvision model. VGG16 is using the whole ***ImageNet*** classification system, The total number of classes is 1000. The file **data/imagenet_classes.txt** provides a dictionary of all one 1000 classes.
 
-## How is the output of the notebooks organized
+## How is the output of the notebooks organized <a name="output_organized"></a>
 - The **output of 1_ETL_around_the_world_classifier.ipynb** is stored in the folder called ***./images***. This folder contains all your (readable) images, with corrected orientation (auto corrected using exif data), sorted and renamed by datetime. This folder is the source for the following image classification step and for the web app. In addition, this notebook creates the first part of the Classification-Meta-Data-Report which is stored as a pickle file called ***images_meta.pkl***. This file contains for example the absolute filepaths to the images, datetimes and GPS information. 
 - The ***output of 2_ML_around_the_world_classifier.ipynb*** is an update of ***images_meta.pkl*** with Yolo and ImageNet classification results. Those results will be concated to the dataframe of images_meta.pkl and stored as a new file called ***images.pkl***. In adition, the Classification-Meta-Data report will be exported as an html table with thumbnail images (***images.html***). Images detected by Yolo are stored with object boundaries in a separate folder called **images_yolo**. Besides that, images with one or more persons detected by Yolo are stored in a folder called ***images_personal***. This subset will be the base for future projects with CNN based classifiers for person detection.
 - The notebook ***3_Filter_around_the_world_classifier.ipynb*** contains filtering code for the web app file ***/wrangling_scripts/filter.data.py***. There is no direct output from this notebook which would be needed for the web app.
 
-## Detailed file list description
+## Detailed file list description <a name="file_descr"></a>
 
 | File/folder name    | Location in repo     | Aim of file
 | :------------- | :------------- | :------------- 
@@ -113,12 +129,12 @@ The purposes of this notebook are:
 
 
 
-## What is still missing and will be implemented in the future?
+## What is still missing and will be implemented in the future? <a name="still_miss"></a>
 In the future will be implemented:
 - a GPS filter via the haversine method. This will allow you to filter images based on adjustable radial distances referred to a provided GPS location (longitude and latitude).
 - a third  CNN based classifier with a layer combination of three times 'Conv-ReLU-MaxPool'. This approach should be deeply enough for sufficient feature extraction and for an appropriate image size/feature reduction. The goal of this CNN will be to filter peronalized images, e.g. to identify images of yourself. 
 
-## Getting Started
+## Setup Instructions <a name="setup"></a>
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
@@ -184,7 +200,14 @@ Place this file called ***yolov3.weights*** into the config folder, `.../web_app
 ```
 $ python run.py
 ```
-Enjoy!
+
+- Open your browser and enter 
+```
+http://0.0.0.0:3001/
+```
+- Now the Flask web server is active
+
+- In order to quit the web server process ***Press CTRL+C***
 
 
 ## Acknowledgments <a name="Acknowledgments"></a>
