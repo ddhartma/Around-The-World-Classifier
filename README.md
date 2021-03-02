@@ -184,6 +184,12 @@ $ conda activate atw_macOS (for Mac OS)
 $ conda activate atw_windows (for Windows)
 ```
 
+- Add environment to Jupyter Notebook kernel list:
+```
+$ python -m ipykernel install --user --name=atw_macOS (for Mac OS)
+$ python -m ipykernel install --user --name=atw_windows (for Windows)
+```
+
 ### Project installation Part B
 - Download the [yolov3 weights](https://pjreddie.com/media/files/yolov3.weights).
 Place this file called ***yolov3.weights*** into the config folder, `.../web_app_atw/data/data/config/`.  This file contains the pretrained weights for a yolov3 image detection with 80 classes. More details can be found [here](https://towardsdatascience.com/object-detection-and-tracking-in-pytorch-b3cf1a696a98).
@@ -194,7 +200,7 @@ Place this file called ***yolov3.weights*** into the config folder, `.../web_app
 - Get your [GMPAS API](https://developers.google.com/maps/documentation?hl=de)
   When you start the web app paste your API key into text input on the top of the user control board. Then click on save. Your API key will be saved to ***setting.json***
 
-    ![image3]
+    
 
 - Change directory to the location of ***run.py*** and enter
 
@@ -206,7 +212,13 @@ $ python run.py
 ```
 http://0.0.0.0:3001/
 ```
-- Now the Flask web server is active
+- Now the Flask web server is active and you can start with object and date filtering
+
+- Paste your Google Maps API Key in the input text window of the User Control board and click save.
+
+    ![image3]
+
+- Now you can locate image GPS data on the map.
 
 - In order to quit the web server process ***Press CTRL+C***
 
